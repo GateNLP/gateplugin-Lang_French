@@ -18,6 +18,9 @@
 	<groupId>uk.ac.gate.plugins</groupId>
 	<artifactId>lang-french</artifactId>
 	<version>8.5-SNAPSHOT</version>
+	
+	<name>Language: French</name>
+	<description>Support for processing French documents</description>
 
 	<licenses>
 		<license>

@@ -16,7 +16,7 @@
 
 	<!-- this is the description of this plugin -->
 	<groupId>uk.ac.gate.plugins</groupId>
-	<artifactId>lang-french</artifactId>
+	<artifactId>lang-french-compat</artifactId>
 	<version>8.5-SNAPSHOT</version>
 	
 	<name>Language: French</name>

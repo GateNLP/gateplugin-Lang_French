@@ -10,7 +10,7 @@
 *
 *  Diana Maynard, 10 Sep 2001
 * 
-*  $Id: unknown.jape 7773 2006-10-31 13:38:42Z dgmaynard $
+*  $Id: unknown.jape 19646 2016-10-06 12:35:17Z dgmaynard $
 */
 
 Phase:	Unknown
@@ -39,7 +39,7 @@ Priority: 100
 Rule:Unknown
 Priority: 50
 ( 
- {Token.category == NNP}
+ {Token.upos == PROPN, Token.length != "1"}
 ) 
 :unknown
 -->

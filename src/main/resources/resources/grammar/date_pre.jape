@@ -10,7 +10,7 @@
 *
 *  Diana Maynard, 10 Sep 2001
 * 
-*  $Id: date_pre.jape 11883 2009-11-03 16:27:32Z markagreenwood $
+*  $Id: date_pre.jape 19646 2016-10-06 12:35:17Z dgmaynard $
 */
 
 
@@ -51,6 +51,16 @@ Rule: GazDate
 -->
  :date.TempDate = {rule = "GazDate"}
 
+Rule: GazDateAmbig
+Priority: 200
+(SPACE | {Token.kind == punctuation})
+(
+ {Token.string == "Sun"}
+)
+:date
+(SPACE | {Token.kind == punctuation})
+-->
+ :date.TempDate = {rule = "GazDateAmbig", }
 
 Rule: PersonDateAmbig
 Priority: 100

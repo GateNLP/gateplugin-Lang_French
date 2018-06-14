@@ -10,7 +10,7 @@
 *
 *  Diana Maynard, 10 Sep 2001
 * 
-*  $Id: reldate.jape 11883 2009-11-03 16:27:32Z markagreenwood $
+*  $Id: reldate.jape 19646 2016-10-06 12:35:17Z dgmaynard $
 */
 
 // this file must follow time.jape
@@ -19,6 +19,9 @@
 Phase:	Name
 Input: Token Lookup TempDate
 Options: control = appelt
+
+/* Note these need fixing for use with upos features and to replace English words with French ones
+*/
 
 Rule: GazDateWords
 Priority: 10
@@ -60,17 +63,37 @@ Priority:30
  :date.TempDate = {rule = "TimeAgo"}
 
 
-Rule: DateModifier
+Rule: ModifierDate
 Priority: 30
-// la semaine prochaine
+// last year
+// next 10 years
 
 (
- (DEF_ART_SING)?
- {Lookup.majorType == date_unit}
  {Lookup.majorType == time_modifier} 
+ (
+  ({Lookup.majorType == number}|
+   {Token.kind == number}
+  )
+ )?
+ {Lookup.majorType == date_unit}
 )
 :date -->
- :date.TempDate = {rule = "DateModifier"}
+ :date.TempDate = {rule = "ModifierDate"}
+
+Rule: ModifierNamedDate
+Priority: 30
+// last October
+// next Tuesday
+
+(
+ {Lookup.majorType == time_modifier} 
+ ({Lookup.minorType == month}|
+  {Lookup.minorType == day}
+ )
+)
+:date -->
+ :date.TempDate = {rule = "ModifierNamedDate"}
+
 
 Rule: EarlyDate
 // early in 2002
@@ -100,7 +123,7 @@ features.put("rule", dateAnn.getFeatures().get("rule"));
 features.put("rule2", "EarlyDate");
 outputAS.add(date.firstNode(), date.lastNode(), "TempDate",
 features);
-outputAS.removeAll(date);
+outputAS.removeAll(date.get("TempDate"));
 }
  
 Rule:FiscalDate

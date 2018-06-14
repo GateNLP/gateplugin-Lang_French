@@ -10,7 +10,7 @@
 *
 *  Diana Maynard, 10 Sep 2001
 * 
-*  $Id: date.jape 7773 2006-10-31 13:38:42Z dgmaynard $
+*  $Id: date.jape 19646 2016-10-06 12:35:17Z dgmaynard $
 */
 
 
@@ -18,15 +18,10 @@ Phase:	Time
 Input: Token Lookup
 Options: control = appelt
 
+/* Note: many of these rules need fixing, e.g. for times 
+*/
 
 /////////////////////////////////////////////////
-
-Macro: DEF_ART_SING
-(
- {Token.string == "le"}|
- {Token.string == "la"}|
- {Token.string == "l"}{Token.string == "'"}
- )
 
 Macro: DAY_NAME 
 ({Lookup.minorType == day })
@@ -47,9 +42,9 @@ Macro: DATE_PRE
 // possible modifiers of dates, eg. "early October"
 ({Token.string == "early"}|
  {Token.string == "late"}|
- {Token.string == "mid"}|
- {Token.string == "mid-"}|
- {Token.string == "end"}
+ {Token.string == "mi"}|
+ {Token.string == "mi-"}|
+ {Token.string == "fin"}
 )
 
 Macro: DAY 
@@ -70,8 +65,11 @@ Macro: SLASH
 Macro: DASH
   {Token.string == "-"}
 
+Macro: DOT
+  {Token.string == "."}
+
 Macro: OF
-  {Token.string == "of"}
+  {Lookup.majorType == "of"}
 
 Macro: AD_BC
 	(  {Token.string == "ad"} | {Token.string == "AD"}
@@ -106,22 +104,18 @@ Macro:	XDAY
 (
  ({Token.orth == upperInitial} |
   {Token.orth == allCaps})
- {Token.string == "Day"}
+ {Token.string == "Jour"}
 )
 
 
 Macro: ORDINAL
 (
-   ({Token.kind == number}
-    ({Token.string == "th"}|
-     {Token.string == "rd"}|
-     {Token.string == "nd"}|
-     {Token.string == "st"})
+   ({Token.string ==~ "[0-9][0-9]?(th|rd|nd|st)"}
     |
    {Lookup.minorType == ordinal})
-   (
-    {Token.string == "of"})?
-)
+   ({Lookup.majorType == "of"})?
+   )
+
 
 Macro: NUM_OR_ORDINAL
   (ORDINAL | DAY_MONTH_NUM)
@@ -170,33 +164,38 @@ Rule: TimeDigital1
 
 
 Rule:	TimeDigital2
-// 04h30
-// 6h
+
+// 8:14 am
+// 4.34 pm
+// 6am
 
 (
  (ONE_DIGIT|TWO_DIGIT) 
- ({Token.string == "h"}|{Token.string == "H"})
-  (TWO_DIGIT)
+ (({Token.string == ":"}|{Token.string == "."} |{Token.string == "-"} )
+  TWO_DIGIT)?
+ (TIME_AMPM)
  (TIME_ZONE)?
 )
 :time
 -->
-:time.TempTime = {kind = "positive", rule = "TimeDigital2"}
+:time.TempTime = {kind = "positive", rule = "TimeDigital"}
 
 
 Rule: TimeOClock
-// dix heures
+// ten o'clock
 
 (
  {Lookup.minorType == hour}
- {Token.string == "heures"}
+ {Token.string == "o"}
+ {Token.string == "'"}
+ {Token.string == "clock"}
 )
 :time 
 -->
  :time.TempTime = {kind = "positive", rule = "TimeOClock"}
 
  
-/*Rule: TimeAnalogue
+Rule: TimeAnalogue
 // half past ten
 // ten to twelve
 // twenty six minutes to twelve
@@ -217,9 +216,9 @@ Rule: TimeOClock
 :time 
 -->
  :time.TempTime = {kind = "positive", rule = "TimeAnalogue"}
-*/
 
-/*Rule: TimeWordsContext
+
+Rule: TimeWordsContext
 Priority: 50
 // seven thirty tomorrow
 
@@ -234,9 +233,9 @@ Priority: 50
 ) 
 -->
 :time1.TempTime = {kind = "positive", rule = "TimeWordsContext"}
-*/
 
-/*Rule: TimeWords
+
+Rule: TimeWords
 
 (
  {Lookup.majorType == number}
@@ -248,7 +247,7 @@ Priority: 50
 -->
   :time.TempTime = {kind = "timeWords", rule = "TimeWords"}
 
-  */
+  
 
 
 Rule: TimeDigitalContext1
@@ -356,20 +355,16 @@ Rule: TimeDigitalContextConj
 
 // Date Rules
 
-// commented out this rule because Date and Person are not included in the 
-// Input headers and I have no idea if adding them will mess up other rules
+//Rule: IgnoreDatePerson
+//Priority: 500
+//(
+// {Date}
+// {Person}
+//)
+//:date
+//-->
+//{}
 
-/*
-Rule: IgnoreDatePerson
-Priority: 500
-(
- {Date}
- {Person}
-)
-:date
--->
-{}
-*/
 
 
 Rule:	DateSlash           // UK only
@@ -405,7 +400,6 @@ Rule:	DateDash
  :date.TempDate = {rule = "DateDash"}
 
 
-
 Rule: 	DateName
 Priority: 20
 // Wed 10 July
@@ -417,7 +411,6 @@ Priority: 20
 // July, 2000
 
 (
- (DEF_ART_SING)?
  (DAY_NAME NUM_OR_ORDINAL MONTH_NAME)|
 
  (DAY_NAME (COMMA)? 
@@ -505,16 +498,16 @@ Rule:	DateNumDashRev
  :date.TempDate = {rule = "DateNumDashRev"}
 
 
-Rule:	DateNumSlash
+Rule:	DateNumSlashDot
 // 01/07/00
 // Note: not 07/00
 
 ( 
-DAY_MONTH_NUM SLASH DAY_MONTH_NUM SLASH YEAR
+DAY_MONTH_NUM (SLASH|DOT) DAY_MONTH_NUM (SLASH|DOT) YEAR
 )
 :date
 -->
- :date.TempDate = {rule = "DateNumSlash"}
+ :date.TempDate = {rule = "DateNumSlashDot"}
 
 
 Rule: ModifierMonth
@@ -626,7 +619,7 @@ Priority: 10
 
 (FOUR_DIGIT)
 :date -->
- :date.TempYear = {kind = "positive", rule = "TempYear3"}
+ :date.TempYear = {kind = "negative", rule = "TempYear3"}
 
 
 Rule: YearWords

@@ -10,11 +10,11 @@
 *
 *  Diana Maynard, 10 Sep 2001
 * 
-*  $Id: name_post.jape 11883 2009-11-03 16:27:32Z markagreenwood $
+*  $Id: name_post.jape 19646 2016-10-06 12:35:17Z dgmaynard $
 */
 
 Phase:	NamePost
-Input: Token Lookup FirstPerson
+Input: Token Lookup FirstPerson 
 Options: control = appelt
 
 // this runs after name.jape to fix some problems that may have been caused
@@ -31,7 +31,7 @@ However, it might be that the firstname is actually an Organization (and has bee
 (
  (
   ({Lookup.majorType == stop}|
-   {Token.category == DT})
+   {Token.upos == DET})
  )
 )
 -->
@@ -53,8 +53,13 @@ if (firstPerson != null && firstPerson.size()>0)
   gate.Annotation personAnn = (gate.Annotation)firstPerson.iterator().next();
   features.put("gender", personAnn.getFeatures().get("gender"));
 }
-  features.put("kind", "personName");
+  features.put("kind", "firstName");
   features.put("rule", "FirstPersonStop");
 outputAS.add(personSet.firstNode(), personSet.lastNode(), "TempPerson",
 features);
 }}
+
+
+
+
+ 
